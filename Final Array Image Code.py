@@ -50,7 +50,7 @@ def createImage(event):
             for j in range(1, 11):
                 phi_values.append(branches['jet' + str(j) + 'phi'][event])
             for j in range(1, 11):
-                b_values.append(branches['jet' + str(j) + 'btag'][event])           
+                b_values.append(branches['jet' + str(j) + 'btag'][event])           # Fill b_values and pT arrays in same loop
 
             # creating the lepton arrays
 
@@ -72,6 +72,8 @@ def createImage(event):
 
     points = None
     points = list(zip(eta_values, phi_values, pT_values))
+    
+    #pT_values = np.log10(pT_values)
 
     eta_array = np.array(eta_values)
     phi_array = np.array(phi_values)
@@ -95,7 +97,7 @@ def createImage(event):
     for ie in range(num_eta_bins):
         larray.append([])
         for ip in range(num_phi_bins):
-            larray[ie].append([0,1,1])
+            larray[ie].append([0,0,0])
 
 
           # Appending the pT values to the array of zeros
@@ -103,38 +105,20 @@ def createImage(event):
     for i in range(0, len(pT_values)):
         if pT_values[i] > 0:
             array[eta_index[i] + int(num_eta_bins / 2), phi_index[i] + int(num_phi_bins / 2)] = pT_values[i]             
-            larray[eta_index[i] + int(num_eta_bins / 2)][phi_index[i] + int(num_phi_bins / 2)] = [pT_values[i],1,1]
+            larray[eta_index[i] + int(num_eta_bins / 2)][phi_index[i] + int(num_phi_bins / 2)] = [pT_values[i],0,0]
 
     pTs = []
 
-    max_jet_value = 0
-    for j in larray:
-        for i in j:
-            if i[0] > max_jet_value:
-                max_jet_value = i[0]
-
-    for i in range(0, 50):
-        for j in range(0, 40):
-            if larray[i][j][0] != 0:
-                larray[i][j][0] = larray[i][j][0] / max_jet_value
-                pTs.append(larray[i][j][0])
-
-    # checking if value is btagged and turning it green 
-    btag_array = np.vstack((pTs, b_values)).T
-
-    test_array = []    
-    for i in range(0, 9):
-        if btag_array[i][1] == 1:
-            test_array.append(btag_array[i][0])
-
-    for i in range(len(larray)):
-        for j in range(len(larray[i])):
-            if larray[i][j][0] in test_array:
-            # Handle BTagged Value
-                val = larray[i][j][0]
-                larray[i][j][0] = 0
-                larray[i][j][1] = val
-                larray[i][j][2] = 0
+    max_jet_value = max(pT_values)
+    
+    for i in range(0, len(pT_values)):
+        if pT_values[i] > 0:
+            pT_scaled = pT_values[i] / max_jet_value
+            array[eta_index[i] + int(num_eta_bins / 2), phi_index[i] + int(num_phi_bins / 2)] = pT_values[i]
+            if b_values[i] != 1:
+                larray[eta_index[i] + int(num_eta_bins / 2)][phi_index[i] + int(num_phi_bins / 2)] = [pT_scaled,0,0]
+            else:
+                larray[eta_index[i] + int(num_eta_bins / 2)][phi_index[i] + int(num_phi_bins / 2)] = [0,pT_scaled,0]
 
 
         # Lepton part                              
@@ -159,12 +143,12 @@ def createImage(event):
     for ie in range(num_eta_bins):
         lepton_larray.append([])
         for ip in range(num_phi_bins):
-            lepton_larray[ie].append([0,0,0.1])
+            lepton_larray[ie].append([0,0,0])
 
     for i in range(0, len(lepton_pT_values)):
         if lepton_pT_values[i] > 0:
             array[eta_index[i] + int(num_eta_bins / 2), phi_index[i] + int(num_phi_bins / 2)] = lepton_pT_values[i]             
-            lepton_larray[eta_index[i] + int(num_eta_bins / 2)][phi_index[i] + int(num_phi_bins / 2)] = [lepton_pT_values[i],0,0.1]
+            lepton_larray[eta_index[i] + int(num_eta_bins / 2)][phi_index[i] + int(num_phi_bins / 2)] = [lepton_pT_values[i],0,0]
 
     max_lepton_value = 0
     for j in lepton_larray:
@@ -183,13 +167,14 @@ def createImage(event):
                 lep_val = lepton_larray[i][j][0]
                 #JOIN THE LEPTON VALUES TO THE JET ARRAY TO COMBINE BOTH ARRAYS
                 larray[i][j][2] = lep_val
-
-    print("--- %s seconds ---" % (time.time() - start_time))            
+                
+#     for i in range(0, 50):            ----> turns background white, changes point color
+#         for j in range(0, 40):
+#             for k in range(0, 3):
+#                 if larray[i][j] == [0, 0, 0]:
+#                     larray[i][j] = [1, 1, 1]           
 
     img = plt.imshow(larray)
-
-    print("--- %s seconds ---" % (time.time() - start_time))
-    
 
     
 createImage(0)    
