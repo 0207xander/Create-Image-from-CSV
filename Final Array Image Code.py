@@ -24,9 +24,7 @@ branches = tree.arrays()
 numevents=len(branches["met"])            
 
 
-def createImage(event):
-
-    start_time = time.time()            
+def createArray(event):           
  
     # Jet part
 
@@ -74,6 +72,7 @@ def createImage(event):
     points = list(zip(eta_values, phi_values, pT_values))
     
     #pT_values = np.log10(pT_values)
+    # 6 max, 4.4 min possible values
 
     eta_array = np.array(eta_values)
     phi_array = np.array(phi_values)
@@ -84,8 +83,8 @@ def createImage(event):
 
     eta_bin_size = 0.2
     phi_bin_size = math.pi/20
-    eta_index = np.round(eta_array / eta_bin_size).astype(int)
-    phi_index = np.round(phi_array / phi_bin_size).astype(int)
+    eta_index = np.floor(eta_array / eta_bin_size).astype(int)
+    phi_index = np.floor(phi_array / phi_bin_size).astype(int)
     eta_min, eta_max = np.min(-5), np.max(5)
     phi_min, phi_max = np.min(-math.pi), np.max(math.pi)
     num_eta_bins = int(2*eta_max/eta_bin_size)  #50
@@ -134,8 +133,8 @@ def createImage(event):
 
         # CODE TO CREATE THE 2D HISTOGRAM FOR LEPTONS
 
-    eta_index = np.round(lepton_eta_array / eta_bin_size).astype(int)
-    phi_index = np.round(lepton_phi_array / phi_bin_size).astype(int)
+    eta_index = np.floor(lepton_eta_array / eta_bin_size).astype(int)
+    phi_index = np.floor(lepton_phi_array / phi_bin_size).astype(int)
 
     array = np.zeros(shape = (num_eta_bins,num_phi_bins))
     np.set_printoptions(threshold=np.inf)
@@ -168,13 +167,18 @@ def createImage(event):
                 #JOIN THE LEPTON VALUES TO THE JET ARRAY TO COMBINE BOTH ARRAYS
                 larray[i][j][2] = lep_val
                 
-#     for i in range(0, 50):            ----> turns background white, changes point color
+#     for i in range(0, 50):           # ----> turns background white
 #         for j in range(0, 40):
 #             for k in range(0, 3):
 #                 if larray[i][j] == [0, 0, 0]:
-#                     larray[i][j] = [1, 1, 1]           
-
-    img = plt.imshow(larray)
+#                     larray[i][j] = [1, 1, 1]
+          
+    larray = np.array(larray)
+    return larray
+    #img = plt.imshow(larray)
+    #training_set.append(img)
 
     
-createImage(0)    
+createArray(0)
+
+training_set = []
